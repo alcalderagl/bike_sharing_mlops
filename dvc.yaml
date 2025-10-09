@@ -1,0 +1,24 @@
+stages:
+  clean_data:
+    cmd: python src/clean_data.py --in data/raw/dataset.csv --out data/clean/clean.csv
+    deps:
+      - src/clean_data.py
+      - data/raw/dataset.csv
+    outs:
+      - data/clean/clean.csv
+
+  prepare_features:
+    cmd: python src/prepare_features.py --in data/clean/clean.csv --out data/clean/features.csv
+    deps:
+      - src/prepare_features.py
+      - data/clean/clean.csv
+    outs:
+      - data/clean/features.csv
+
+  train_model:
+    cmd: python src/train_model.py --data data/clean/features.csv --out models/model.pkl
+    deps:
+      - src/train_model.py
+      - data/clean/features.csv
+    outs:
+      - models/model.pkl

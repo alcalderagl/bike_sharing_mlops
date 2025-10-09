@@ -1,0 +1,5 @@
+pandas==2.2.2
+scikit-learn==1.5.0
+joblib==1.4.2
+dvc[gdrive]==3.63.0
+pytest==8.3.2
