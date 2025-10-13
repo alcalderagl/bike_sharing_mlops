@@ -1,1 +1,10 @@
 /bike_sharing_modified.csv
+
+# Ignorar datasets grandes
+/bike_sharing_modified.csv
+/dataset.csv
+
+# Pero permitir archivos DVC y de control
+!*.dvc
+!.gitignore
+!.gitkeep
