@@ -96,6 +96,16 @@ gcloud auth application-default login
 dvc pull
 ```
 
+# Tambien se puede correr el siguiente script para automatizar la configuracion
+
+## Dar permisos de ejecución
+
+chmod +x scripts/init_env.sh
+
+## Ejecutar la configuración completa
+
+.scripts/init_env.sh
+
 ---
 
 ## CI/CD en GitHub Actions (opcional)
