@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 # Ignorar datasets grandes concretos
+=======
+/bike_sharing_modified.csv
+<<<<<<< HEAD
+
+# Ignorar datasets grandes
+>>>>>>> 4dd4752 (Corrige .gitignore en data/raw para permitir .dvc)
 /bike_sharing_modified.csv
 /dataset.csv
 
@@ -6,3 +13,6 @@
 !*.dvc
 !.gitignore
 !.gitkeep
+=======
+/dataset.csv
+>>>>>>> cd2a33d (Corrige .gitignore en data/raw para permitir .dvc)
