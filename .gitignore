@@ -211,3 +211,7 @@ service_account.json
 # DVC
 /data/*
 /models/*
+# --- keep DVC metadata inside data/ ---
+!data/**/*.dvc
+!data/**/.gitignore
+!data/**/.gitkeep
