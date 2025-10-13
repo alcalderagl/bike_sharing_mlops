@@ -1,3 +1,11 @@
+# Permitir que Git rastree los .dvc dentro de data/raw/
+!data/
+!data/**
+!data/**/*.dvc
+!data/**/.gitignore
+!data/**/.gitkeep
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -207,3 +215,12 @@ marimo/_lsp/
 __marimo__/
 service_account.json
 service_account.json
+
+# DVC: ignorar datos pesados, permitir metadatos
+/data/*
+/models/*
+
+# mantener metadatos DVC y keepers dentro de data/
+!data/**/*.dvc
+!data/**/.gitignore
+!data/**/.gitkeep

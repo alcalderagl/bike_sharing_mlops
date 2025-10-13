@@ -1,0 +1,53 @@
+schema: '2.0'
+stages:
+  clean_data:
+    cmd: python src/clean_data.py --in data/raw/dataset.csv --out 
+      data/clean/clean.csv
+    deps:
+    - path: data/raw/dataset.csv
+      hash: md5
+      md5: 7747b2efcdd3801b83c1cfce2d600c15
+      size: 1144308
+    - path: src/clean_data.py
+      hash: md5
+      md5: b20473219dbf5795c58eefe552b72726
+      size: 414
+    outs:
+    - path: data/clean/clean.csv
+      hash: md5
+      md5: 7747b2efcdd3801b83c1cfce2d600c15
+      size: 1144308
+  prepare_features:
+    cmd: python src/prepare_features.py --in data/clean/clean.csv --out 
+      data/clean/features.csv
+    deps:
+    - path: data/clean/clean.csv
+      hash: md5
+      md5: 7747b2efcdd3801b83c1cfce2d600c15
+      size: 1144308
+    - path: src/prepare_features.py
+      hash: md5
+      md5: 065f58e8593635c2ff4e813a17bdd9d4
+      size: 615
+    outs:
+    - path: data/clean/features.csv
+      hash: md5
+      md5: 4414941dbf3e807fa837405bd8cbda4c
+      size: 1237486
+  train_model:
+    cmd: python src/train_model.py --data data/clean/features.csv --out 
+      models/model.pkl
+    deps:
+    - path: data/clean/features.csv
+      hash: md5
+      md5: 4414941dbf3e807fa837405bd8cbda4c
+      size: 1237486
+    - path: src/train_model.py
+      hash: md5
+      md5: d0c4416aad905a2a96b41f8cf483c2ac
+      size: 880
+    outs:
+    - path: models/model.pkl
+      hash: md5
+      md5: 0297fc7099a293246050448871a98bfa
+      size: 1329
