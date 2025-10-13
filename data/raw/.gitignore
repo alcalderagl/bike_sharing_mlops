@@ -1,10 +1,8 @@
-/bike_sharing_modified.csv
-
-# Ignorar datasets grandes
+# Ignorar datasets grandes concretos
 /bike_sharing_modified.csv
 /dataset.csv
 
-# Pero permitir archivos DVC y de control
+# Permitir metadatos y archivos de control
 !*.dvc
 !.gitignore
 !.gitkeep
