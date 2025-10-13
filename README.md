@@ -98,6 +98,7 @@ dvc pull
 
 # Tambien se puede correr el siguiente script para automatizar la configuracion
 
+```bash
 ## Dar permisos de ejecución
 
 chmod +x scripts/init_env.sh
@@ -105,6 +106,7 @@ chmod +x scripts/init_env.sh
 ## Ejecutar la configuración completa
 
 .scripts/init_env.sh
+```
 
 ---
 
