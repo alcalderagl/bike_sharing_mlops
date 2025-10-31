@@ -1,144 +1,188 @@
-# DVC + Google Drive Starter (Maestría)
+# 🚴 MLOps Pipeline: Predicción de Demanda de Bicicletas
 
-Plantilla mínima para reproducibilidad con **DVC** y remoto en **Google Drive** (gdrive). Incluye pipeline con etapas:
+Este proyecto implementa un *pipeline* de Machine Learning (ML) modularizado y reproducible para predecir la demanda horaria de bicicletas (columna `cnt`) utilizando el dataset **Bike Sharing Dataset**.
 
-- `clean_data`
-- `prepare_features`
-- `train_model`
+# Estructura del dataset
+| Variable Name | Role     | Type         | Description                                                                                                           | Units | Missing Values |
+|----------------|----------|--------------|-----------------------------------------------------------------------------------------------------------------------|--------|----------------|
+| instant        | ID       | Integer      | record index                                                                                                          |        | no             |
+| dteday         | Feature  | Date         | date                                                                                                                  |        | no             |
+| season         | Feature  | Categorical  | 1:winter, 2:spring, 3:summer, 4:fall                                                                                  |        | no             |
+| yr             | Feature  | Categorical  | year (0: 2011, 1: 2012)                                                                                               |        | no             |
+| mnth           | Feature  | Categorical  | month (1 to 12)                                                                                                       |        | no             |
+| hr             | Feature  | Categorical  | hour (0 to 23)                                                                                                        |        | no             |
+| holiday        | Feature  | Binary       | weather day is holiday or not (extracted from http://dchr.dc.gov/page/holiday-schedule)                               |        | no             |
+| weekday        | Feature  | Categorical  | day of the week                                                                                                       |        | no             |
+| workingday     | Feature  | Binary       | if day is neither weekend nor holiday is 1, otherwise is 0                                                            |        | no             |
+| weathersit     | Feature  | Categorical  | 1: Clear, 2: Few clouds, 3: Partly cloudy, 4: Partly cloudy                                                                    |        | no             |
+| temp           | Feature  | Continuous   | Normalized temperature in Celsius. The values are derived via (t-t_min)/(t_max-t_min), t_min=-8, t_max=+39 (hourly)   | C      | no             |
+| atemp          | Feature  | Continuous   | Normalized feeling temperature in Celsius. Derived via (t-t_min)/(t_max-t_min), t_min=-16, t_max=+50 (hourly)         | C      | no             |
+| hum            | Feature  | Continuous   | Normalized humidity. The values are divided by 100 (max)                                                              |        | no             |
+| windspeed      | Feature  | Continuous   | Normalized wind speed. The values are divided by 67 (max)                                                             |        | no             |
+| casual         | Other    | Integer      | count of casual users                                                                                                 |        | no             |
+| registered     | Other    | Integer      | count of registered users                                                                                             |        | no             |
+| cnt            | Target   | Integer      | count of total rental bikes including both casual and registered                                                      |        | no             |
 
-## Requisitos
+--- 
 
-- Python 3.10+
-- Git
-- DVC con soporte Google Drive:
-  ```bash
-  pip install "dvc[gdrive]"
-  ```
+El flujo de trabajo sigue las mejores prácticas de MLOps, utilizando **DVC (Data Version Control)** para la reproducibilidad de datos y **MLflow** para el seguimiento de experimentos.
 
 ---
 
-## Uso rápido
+## ⚙️ Tecnologías y Requisitos
 
-### 1) Clonar y preparar entorno
+| Herramienta | Propósito |
+| :--- | :--- |
+| **Python** | Lenguaje principal de desarrollo. |
+| **Scikit-learn** | Modelado, Pipelines y ColumnTransformer (Punto 3). |
+| **DVC (Data Version Control)** | Versionado del pipeline completo y de los artefactos (Punto 4). |
+| **MLflow** | Registro de experimentos, parámetros, métricas y modelos (Punto 4). |
+| **click** | Modulación de los scripts de Python. |
 
-```bash
-git clone <URL-de-tu-repo>
-cd <carpeta>
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+---
+
+## 🏗️ Estructura del Proyecto
+
+
+Project Organization
+------------
+
+    ├── LICENSE
+    ├── Makefile           <- Makefile with commands like `make data` or `make train`
+    ├── README.md          <- The top-level README for developers using this project.
+    ├── data
+    │   ├── external       <- Data from third party sources.
+    │   ├── interim        <- Intermediate data that has been transformed.
+    │   ├── processed      <- The final, canonical data sets for modeling.
+    │   └── raw            <- The original, immutable data dump.
+    │
+    ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
+    │
+    ├── models             <- Trained and serialized models, model predictions, or model summaries
+    │
+    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
+    │                         the creator's initials, and a short `-` delimited description, e.g.
+    │                         `1.0-jqp-initial-data-exploration`.
+    │
+    ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
+    │
+    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
+    │   └── figures        <- Generated graphics and figures to be used in reporting
+    │
+    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
+    │                         generated with `pip freeze > requirements.txt`
+    │
+    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
+    ├── src                <- Source code for use in this project.
+    │   ├── __init__.py    <- Makes src a Python module
+    │   │
+    │   ├── data           <- Scripts to download or generate data
+    │   │   └── make_dataset.py
+    │   │
+    │   ├── features       <- Scripts to turn raw data into features for modeling
+    │   │   └── build_features.py
+    │   │
+    │   ├── models         <- Scripts to train models and then use trained models to make
+    │   │   │                 predictions
+    │   │   ├── predict_model.py
+    │   │   └── train_model.py
+    │   │
+    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
+    │       └── visualize.py
+    │
+    └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
+
+
+--------
+
+<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+
+## 🧠 Lógica de Preprocesamiento
+
+El *pipeline* implementa las siguientes transformaciones críticas derivadas del EDA y Preprocesamiento:
+
+1.  **Limpieza:** Eliminación de *Target Leakage* (`casual`, `registered`) e inconsistencias de datos (ej. cadenas de texto) mediante coerción a tipo numérico.
+2.  **Manejo de Outliers:** Aplicación de **Winsorización** a las *features* continuas (`temp`, `atemp`, `hum`, `windspeed`) a percentiles variables (`0.01` y `0.99`).
+3.  **Transformación del Objetivo:** Aplicación de la transformación **Logarítmica Inversa (`np.log1p`)** a la variable `cnt` para reducir la asimetría.
+4.  **Pipeline Scikit-learn:** Uso de `ColumnTransformer` para estandarizar *features* continuas y codificar categóricas, asegurando que las transformaciones se apliquen solo con los datos de entrenamiento (Punto 3).
+5.  **División Temporal:** El conjunto de datos se divide por tiempo, utilizando el **20% de los datos más recientes** para el conjunto de prueba.
+
+---
+
+## 🏃 Reproducción del Proyecto (Punto 4: Reproducibilidad)
+
+El proyecto está diseñado para ser completamente reproducible utilizando DVC y la línea de comandos.
+
+### 1. Configuración del Entorno
+
+Para comenzar, asegúrate de activar tu entorno virtual e instalar las dependencias necesarias:
+
+# 1. Activación del entorno virtual
+```
+.venv\Scripts\activate      # Windows
+```
+# 2. Instalar dependencias (basado en requirements.txt)
+```
 pip install -r requirements.txt
 ```
-
-### 2) Inicializar DVC (si tu repo no lo trae)
-
-```bash
-dvc init
-git add .dvc .gitignore
-git commit -m "Init DVC"
+### 2. Ejecución del Pipeline Completo
+Asegúrese de que el archivo bike_sharing_modified.csv se encuentre en data/raw/. El pipeline completo de 5 etapas se ejecuta con el siguiente comando, que garantiza que todas las transformaciones se realicen en el orden correcto y que los artefactos sean versionados:
 ```
-
-### 3) Crear carpeta en Google Drive y obtener su **Folder ID**
-
-- Crea una carpeta, por ejemplo: `DVC_Remote_Maestria`
-- Copia el **ID** de la URL de Drive, similar a: `https://drive.google.com/drive/folders/1AbCDefGhIJkLMn0Pq`
-  - El ID sería: `1AbCDefGhIJkLMn0Pq`
-
-### 4) Configurar remoto DVC con Google Drive
-
-```bash
-dvc remote add -d storage gdrive://<TU_FOLDER_ID>
-git add .dvc/config
-git commit -m "Configura remoto DVC (Google Drive)"
-```
-
-> La **primera vez** que hagas `dvc push`/`pull` pedirá un flujo OAuth (abre un enlace, pega el código).
-
-### 5) Versionar un dataset de ejemplo
-
-```bash
-# Coloca tu archivo en data/raw/dataset.csv
-dvc add data/raw/dataset.csv
-git add data/raw/dataset.csv.dvc
-git commit -m "Track dataset con DVC (v1)"
-dvc push     # sube los binarios a Drive
-git push     # sube metadatos/código a GitHub
-```
-
-### 6) Ejecutar el pipeline
-
-```bash
 dvc repro
-dvc push
-git add -A && git commit -m "Actualiza outputs del pipeline" && git push
 ```
 
----
+### 3. Secuencia de Ejecución de Etapas
 
-## Configuración del entorno
+El comando *dvc repro* ejecuta internamente la siguiente secuencia de scripts modulares:
+<table style="width:100%; border-collapse: collapse; border: 1px solid #4B5263; background-color: #282C34; color: #DCDFE4;">
+  <thead>
+    <tr style="background-color: #3B4048;">
+      <th style="border: 1px solid #4B5263; padding: 10px; text-align: left; color: #61AFEF;">Paso</th>
+      <th style="border: 1px solid #4B5263; padding: 10px; text-align: left; color: #61AFEF;">Archivo</th>
+      <th style="border: 1px solid #4B5263; padding: 10px; text-align: left; color: #61AFEF;">Salida Principal</th>
+      <th style="border: 1px solid #4B5263; padding: 10px; text-align: left; color: #61AFEF;">Propósito</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #4B5263; padding: 8px;">1. Limpieza</td>
+      <td style="border: 1px solid #4B5263; padding: 8px;"><code style="background-color: #3B4048; color: #98C379; padding: 2px 4px; border-radius: 3px;">src/data/make_dataset.py</code></td>
+      <td style="border: 1px solid #4B5263; padding: 8px;"><code style="background-color: #3B4048; color: #E5C07B; padding: 2px 4px; border-radius: 3px;">data/processed/</code></td>
+      <td style="border: 1px solid #4B5263; padding: 8px;">Prepara los datos, aplica Winsorización y Log Transform.</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #4B5263; padding: 8px;">2. Features/Split</td>
+      <td style="border: 1px solid #4B5263; padding: 8px;"><code style="background-color: #3B4048; color: #98C379; padding: 2px 4px; border-radius: 3px;">src/features/build_features.py</code></td>
+      <td style="border: 1px solid #4B5263; padding: 8px;"><code style="background-color: #3B4048; color: #E5C07B; padding: 2px 4px; border-radius: 3px;">models/preprocessor.pkl</code></td>
+      <td style="border: 1px solid #4B5263; padding: 8px;">Divide datos (por tiempo) y define el ColumnTransformer.</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #4B5263; padding: 8px;">3. Entrenamiento</td>
+      <td style="border: 1px solid #4B5263; padding: 8px;"><code style="background-color: #3B4048; color: #98C379; padding: 2px 4px; border-radius: 3px;">src/models/train_model.py</code></td>
+      <td style="border: 1px solid #4B5263; padding: 8px;"><code style="background-color: #3B4048; color: #E5C07B; padding: 2px 4px; border-radius: 3px;">models/final_pipeline.pkl</code></td>
+      <td style="border: 1px solid #4B5263; padding: 8px;">Entrena el Pipeline completo y registra en MLflow.</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #4B5263; padding: 8px;">4. Predicción</td>
+      <td style="border: 1px solid #4B5263; padding: 8px;"><code style="background-color: #3B4048; color: #98C379; padding: 2px 4px; border-radius: 3px;">src/models/predict_model.py</code></td>
+      <td style="border: 1px solid #4B5263; padding: 8px;"><code style="background-color: #3B4048; color: #E5C07B; padding: 2px 4px; border-radius: 3px;">data/results/predictions_final.csv</code></td>
+      <td style="border: 1px solid #4B5263; padding: 8px;">Genera predicciones en escala real (aplicando inversa logarítmica).</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #4B5263; padding: 8px;">5. Visualización</td>
+      <td style="border: 1px solid #4B5263; padding: 8px;"><code style="background-color: #3B4048; color: #98C379; padding: 2px 4px; border-radius: 3px;">src/visualization/visualize.py</code></td>
+      <td style="border: 1px solid #4B5263; padding: 8px;"><code style="background-color: #3B4048; color: #E5C07B; padding: 2px 4px; border-radius: 3px;">reports/figures/predictions_vs_real.png</code></td>
+      <td style="border: 1px solid #4B5263; padding: 8px;">Genera el gráfico de evaluación final.</td>
+    </tr>
+  </tbody>
+</table>
 
-Sigue estos pasos para clonar el repositorio y preparar el entorno de trabajo:
 
-```bash
-# Clonar el repositorio
-git clone <URL-de-tu-repo>
-cd <carpeta>
+### 4. Seguimiento de Experimentos con MLflow
 
-# Crear y activar un entorno virtual
-python3 -m venv .venv
-source .venv/bin/activate
+Para validar el seguimiento de experimentos y gestionar el modelo registrado (Punto 4: Gestión de Modelos):
 
-# Instalar dependencias
-pip install dvc dvc-gs
-
-# Autenticación con Google Cloud
-gcloud auth application-default login
-
-# Descargar los datos versionados con DVC
-dvc pull
 ```
-
----
-
-## CI/CD en GitHub Actions (opcional)
-
-### Opción A: Autenticación interactiva (no recomendada para CI)
-
-El flujo OAuth de Drive requiere intervención, por lo que en CI no funciona.
-
-### Opción B: Service Account (recomendado para CI)
-
-1. Crea una **Service Account** en Google Cloud y comparte la carpeta de Drive con el email de esa cuenta (o usa Drive de un proyecto).
-2. Descarga el **JSON** de la Service Account.
-3. En tu repo de GitHub → **Settings → Secrets and variables → Actions**, crea un secreto llamado `GDRIVE_SA_JSON` con el **contenido del JSON**.
-4. En tu DVC remote, añade la configuración para usar la Service Account:
-   ```bash
-   dvc remote modify storage gdrive_service_account_json_file_path .gdrive_sa.json
-   ```
-   > (Este paso normalmente se aplica en CI **temporalmente** antes de `dvc pull`.)
-
-El workflow incluido escribe el JSON en un archivo temporal `.gdrive_sa.json` y ejecuta `dvc pull`.
-
----
-
-## Estructura del proyecto
-
+mlflow ui
 ```
-src/
-  clean_data.py
-  prepare_features.py
-  train_model.py
-data/
-  raw/      # datasets de entrada (versionados por DVC)
-  clean/    # datos procesados (outs del pipeline)
-models/     # modelos entrenados (outs del pipeline)
-dvc.yaml    # etapas del pipeline
-```
-
----
-
-## Limpieza y buenas prácticas
-
-- No borres archivos dentro del remoto de Drive manualmente; usa `dvc gc` para limpiar versiones que ya no están referenciadas.
-- No subas credenciales a Git. Usa **Secrets** en GitHub Actions.
-- Si el repo ya trae DVC configurado, **no reinicialices**: usa `dvc pull` directamente.
-
-¡Listo! 🎯
+Abre el navegador en la dirección indicada para ver las métricas (ej. RMSE) y los parámetros del experimento.
