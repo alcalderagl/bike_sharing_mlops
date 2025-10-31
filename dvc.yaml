@@ -1,24 +1,52 @@
+# dvc.yaml CORREGIDO
+
 stages:
-  clean_data:
-    cmd: python src/clean_data.py --in data/raw/dataset.csv --out data/clean/clean.csv
+  # 1. Limpieza, Winsorización y Transformación del Target (make_dataset.py)
+  process_data:
+    cmd: python src/data/make_dataset.py data/raw/bike_sharing_modified.csv data/processed/bike_sharing_processed.csv
     deps:
-      - src/clean_data.py
-      - data/raw/dataset.csv
+      - src/data/make_dataset.py
+      - data/raw/bike_sharing_modified.csv 
     outs:
-      - data/clean/clean.csv
+      - data/processed/bike_sharing_processed.csv
 
-  prepare_features:
-    cmd: python src/prepare_features.py --in data/clean/clean.csv --out data/clean/features.csv
+  # 2. División de Datos por Tiempo, Ingeniería de Features y Guardado del Preprocesador (build_features.py)
+  # NOTA: Esta etapa sigue rastreando el directorio intermedio.
+  split_and_preprocess:
+    cmd: python src/features/build_features.py data/processed/bike_sharing_processed.csv data/interim models/preprocessor.pkl
     deps:
-      - src/prepare_features.py
-      - data/clean/clean.csv
+      - src/features/build_features.py
+      - data/processed/bike_sharing_processed.csv
     outs:
-      - data/clean/features.csv
+      - data/interim/  # Directorio que contiene X_train.csv, y_train.csv, X_test.csv, y_test.csv
+      - models/preprocessor.pkl
 
+  # 3. Entrenamiento del Pipeline, Evaluación y Registro en MLflow (train_model.py)
   train_model:
-    cmd: python src/train_model.py --data data/clean/features.csv --out models/model.pkl
+    cmd: python src/models/train_model.py data/interim models/preprocessor.pkl models/final_pipeline.pkl
     deps:
-      - src/train_model.py
-      - data/clean/features.csv
+      - src/models/train_model.py
+      - data/interim/
+      - models/preprocessor.pkl
     outs:
-      - models/model.pkl
+      - models/final_pipeline.pkl
+
+  # 4. Generación de Predicciones con el Pipeline Final (predict_model.py)
+  predict:
+    cmd: python src/models/predict_model.py models/final_pipeline.pkl data/interim/X_test.csv data/results/predictions_final.csv
+    deps:
+      - src/models/predict_model.py
+      - models/final_pipeline.pkl
+      - data/interim/X_test.csv
+    outs:
+      - data/results/predictions_final.csv
+
+  # 5. Visualización de Resultados (visualize.py)
+  visualize:
+    cmd: python src/visualization/visualize.py data/results/predictions_final.csv data/interim/y_test.csv reports/figures/predictions_vs_real.png
+    deps:
+      - src/visualization/visualize.py
+      - data/results/predictions_final.csv
+      - data/interim/y_test.csv
+    outs:
+      - reports/figures/predictions_vs_real.png
