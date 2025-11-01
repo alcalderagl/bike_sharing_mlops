@@ -16,3 +16,4 @@
 =======
 /dataset.csv
 >>>>>>> cd2a33d (Corrige .gitignore en data/raw para permitir .dvc)
+/bike_sharing_original.csv
