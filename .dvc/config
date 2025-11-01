@@ -1,8 +1,0 @@
-[core]
-    remote = storage_gcs
-['remote "storage"']
-    url = gdrive://1WIFDDwcbeOlIeEf3chztCv_3uoC1HR47
-    gdrive_use_service_account = true
-    gdrive_service_account_json_file_path = ../service_account.json
-['remote "storage_gcs"']
-    url = gs://eq10-dvc-mlops
