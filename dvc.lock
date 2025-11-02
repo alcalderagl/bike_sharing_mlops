@@ -35,19 +35,107 @@ stages:
       md5: 4414941dbf3e807fa837405bd8cbda4c
       size: 1237486
   train_model:
-    cmd: python src/train_model.py --data data/clean/features.csv --out 
-      models/model.pkl
+    cmd: python src/models/train_model.py data/interim models/preprocessor.pkl 
+      models/final_pipeline.pkl
     deps:
-    - path: data/clean/features.csv
+    - path: data/interim/
       hash: md5
-      md5: 4414941dbf3e807fa837405bd8cbda4c
-      size: 1237486
-    - path: src/train_model.py
+      md5: 08585a15487f8aa7abb405153e166c23.dir
+      size: 50177
+      nfiles: 4
+    - path: models/preprocessor.pkl
       hash: md5
-      md5: d0c4416aad905a2a96b41f8cf483c2ac
-      size: 880
+      md5: 217fe03453cfbb018b03f35de16138ce
+      size: 4600
+    - path: src/models/train_model.py
+      hash: md5
+      md5: 58a3022e185a70984aa5357cc2627731
+      size: 6186
     outs:
-    - path: models/model.pkl
+    - path: models/final_pipeline.pkl
       hash: md5
-      md5: 0297fc7099a293246050448871a98bfa
-      size: 1329
+      md5: d740fcf924a8fa19fce8499dc2a1564e
+      size: 3005232
+  process_data:
+    cmd: python src/data/make_dataset.py data/raw/bike_sharing_modified.csv 
+      data/processed/bike_sharing_processed.csv
+    deps:
+    - path: data/raw/bike_sharing_modified.csv
+      hash: md5
+      md5: 1484028223d304a18ddd9ce33a1af441
+      size: 1686247
+    - path: src/data/make_dataset.py
+      hash: md5
+      md5: 57bdd20266342f6cfeda37fe863f489c
+      size: 7367
+    outs:
+    - path: data/processed/bike_sharing_processed.csv
+      hash: md5
+      md5: b8f496fc2d7ff4cf1a3251cf8af0a172
+      size: 49517
+  split_and_preprocess:
+    cmd: python src/features/build_features.py 
+      data/processed/bike_sharing_processed.csv data/interim 
+      models/preprocessor.pkl
+    deps:
+    - path: data/processed/bike_sharing_processed.csv
+      hash: md5
+      md5: b8f496fc2d7ff4cf1a3251cf8af0a172
+      size: 49517
+    - path: src/features/build_features.py
+      hash: md5
+      md5: 55758debdd143a46def543233352a517
+      size: 7077
+    outs:
+    - path: data/interim/
+      hash: md5
+      md5: 08585a15487f8aa7abb405153e166c23.dir
+      size: 50177
+      nfiles: 4
+    - path: models/preprocessor.pkl
+      hash: md5
+      md5: 217fe03453cfbb018b03f35de16138ce
+      size: 4600
+  predict:
+    cmd: python src/models/predict_model.py models/final_pipeline.pkl 
+      data/interim/X_test.csv data/results/predictions_final.csv
+    deps:
+    - path: data/interim/X_test.csv
+      hash: md5
+      md5: 12c7303a0498e6ead47e122a3c0fe73e
+      size: 7391
+    - path: models/final_pipeline.pkl
+      hash: md5
+      md5: d740fcf924a8fa19fce8499dc2a1564e
+      size: 3005232
+    - path: src/models/predict_model.py
+      hash: md5
+      md5: dbd4f7c36b9437aa3d02048a7fe6b318
+      size: 4171
+    outs:
+    - path: data/results/predictions_final.csv
+      hash: md5
+      md5: 0762367dfac38db9fd5d39a95291c1cb
+      size: 10050
+  visualize:
+    cmd: python src/visualization/visualize.py 
+      data/results/predictions_final.csv data/interim/y_test.csv 
+      reports/figures/predictions_vs_real.png
+    deps:
+    - path: data/interim/y_test.csv
+      hash: md5
+      md5: 3f5017aa75e7042beeed3b3dcf1ec4f8
+      size: 2729
+    - path: data/results/predictions_final.csv
+      hash: md5
+      md5: 0762367dfac38db9fd5d39a95291c1cb
+      size: 10050
+    - path: src/visualization/visualize.py
+      hash: md5
+      md5: a7ccf73a5437fd7d86289f2b6537d5da
+      size: 4498
+    outs:
+    - path: reports/figures/predictions_vs_real.png
+      hash: md5
+      md5: 85e915f487c04951b5dfcb3c0bd4affd
+      size: 52963
