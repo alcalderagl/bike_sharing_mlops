@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from ..schemas.schemas import PredictionRequest, PredictionResponse
-from ..deps import load_model
-from ..inference import predict_one
-from ..version import get_version
+from services.api.app.schemas import PredictionRequest, PredictionResponse
+from services.api.app.deps import load_model
+from services.api.app.inference import predict_one
+from services.api.app.version import get_version
 from typing import List
 router = APIRouter()
 

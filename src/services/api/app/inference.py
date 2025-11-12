@@ -1,4 +1,4 @@
-from .schemas.schemas import RideFeatures
+from .schemas import RideFeatures
 from .config import settings
 import joblib
 import numpy as np
