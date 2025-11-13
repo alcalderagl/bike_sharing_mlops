@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    MODEL_PATH: str = "../../../../models/random_forest_lags_20251012_1732.pkl"
+    MODEL_PATH: str = "models/final_pipeline.pkl"
     MODEL_VERSION: str = "0.1.0"
     # ej. variables para Cloud Run
     PORT: int = 8080

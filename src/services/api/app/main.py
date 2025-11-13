@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 # from .version import get_version
 # import services.api.app.routes.health #import health
-from services.api.app.routes import health
+from services.api.app.routes import health, predict
 
 tags_metadata = [
     {"name": "health", "description": "liveness & readiness"},
@@ -18,4 +18,4 @@ app = FastAPI(
 )
 
 app.include_router(health.router, prefix="/health", tags=["health"])
-# app.include_router(predict.router, prefix="/v1", tags=["predict"])
+app.include_router(predict.router, prefix="/v1", tags=["predict"])
