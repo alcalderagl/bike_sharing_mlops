@@ -217,9 +217,9 @@ service_account.json
 service_account.json
 
 # DVC: ignorar datos pesados, permitir metadatos
-/data/*
-/models/*
-/mlruns/*
+#/data/*
+#/models/*
+#/mlruns/*
 
 # mantener metadatos DVC y keepers dentro de data/
 !data/**/*.dvc
