@@ -152,6 +152,8 @@ def main_build_features(input_filepath, output_dir, train_ratio):
     Index_val.to_csv(output_path / 'Index_val.csv', index=False)
     y_train.to_csv(output_path / 'y_train.csv', index=False, header=[TARGET_COLUMN])
     y_val.to_csv(output_path / 'y_val.csv', index=False, header=[TARGET_COLUMN])
+    historical_cols = ['dteday', 'hr', 'cnt'] # Columnas clave para el Feature Builder
+    df_clean[historical_cols].to_csv(output_path / 'historical_for_prediction.csv', index=False)
     
     logger.info(f"Datasets de Train y Validation guardados en: {output_path}")
 

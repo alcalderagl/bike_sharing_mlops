@@ -110,16 +110,16 @@ stages:
     deps:
     - path: data/interim/Index_val.csv
       hash: md5
-      md5: 6914c1e11e39ee77922c05ac7793f3ea
-      size: 51097
+      md5: 057ac3190cc3a64436c570b3f10b6caf
+      size: 51092
     - path: data/interim/X_val.csv
       hash: md5
-      md5: a86a4904606a093fad2dc07757713d08
-      size: 928053
+      md5: a47808c1e0e7af08330e683d1bbc62c6
+      size: 929122
     - path: models/final_xgb_model.pkl
       hash: md5
-      md5: 2cc2f72c4ff5fd870174a19c41459975
-      size: 524375
+      md5: 2f2e339c10484fac8883c0aa088ceaee
+      size: 1405906
     - path: src/models/predict_model.py
       hash: md5
       md5: 787a81b288d593809fe271a73b4e0252
@@ -127,8 +127,8 @@ stages:
     outs:
     - path: data/results/predictions_final.csv
       hash: md5
-      md5: 43b0837db0f824184d15c720d0121279
-      size: 70746
+      md5: fabe60956ee1402a1fc5825c2b0b0852
+      size: 70708
   visualize:
     cmd: python src/visualization/visualize.py 
       data/results/predictions_final.csv data/interim/y_val.csv 
@@ -136,12 +136,12 @@ stages:
     deps:
     - path: data/interim/y_val.csv
       hash: md5
-      md5: a754f1fb17435c85480264015f7950ed
-      size: 67003
+      md5: 2d26a4f8caeaa25df71da4850e954eb8
+      size: 66988
     - path: data/results/predictions_final.csv
       hash: md5
-      md5: 43b0837db0f824184d15c720d0121279
-      size: 70746
+      md5: fabe60956ee1402a1fc5825c2b0b0852
+      size: 70708
     - path: src/visualization/visualize.py
       hash: md5
       md5: 85f6197de0705df327d1efd984c688a9
@@ -149,8 +149,8 @@ stages:
     outs:
     - path: reports/figures/predictions_vs_real.png
       hash: md5
-      md5: d980e1e03efa131b4749203ccdbe4b31
-      size: 234382
+      md5: be7d9f846b356fe49e05bb028b7a04b5
+      size: 262348
   predict_rf:
     cmd: python src/models/predict_model.py models rf data/interim/X_test.csv 
       data/results/predictions_rf.csv
@@ -203,8 +203,8 @@ stages:
       size: 1015273
     - path: src/features/build_features.py
       hash: md5
-      md5: c8d85006a1e1449f2830300a68e797dd
-      size: 6872
+      md5: 97d0fc33a2f335bd64cfe18b8819717a
+      size: 7058
     outs:
     - path: data/interim/X_train.csv
       hash: md5
@@ -243,8 +243,8 @@ stages:
       size: 15739
     - path: src/features/build_features.py
       hash: md5
-      md5: c8d85006a1e1449f2830300a68e797dd
-      size: 6872
+      md5: 97d0fc33a2f335bd64cfe18b8819717a
+      size: 7058
     - path: src/models/predict_model.py
       hash: md5
       md5: 787a81b288d593809fe271a73b4e0252

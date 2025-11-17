@@ -305,6 +305,7 @@ wheel==0.43.0
 wordcloud==1.9.3
 wrapt==1.16.0
 wsproto==1.2.0
+xgboost==3.1.1
 yarl==1.22.0
 zc.lockfile==4.0
 zipp==3.23.0

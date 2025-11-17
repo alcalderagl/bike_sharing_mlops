@@ -1,3 +1,4 @@
+from src.services.api.app.config import settings
 
 def get_version() -> str:
-    return 'model_version'
+    return settings.MODEL_VERSION
