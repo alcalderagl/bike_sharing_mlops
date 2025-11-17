@@ -3,130 +3,139 @@ import logging
 from pathlib import Path
 import joblib
 import pandas as pd
-from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from dotenv import find_dotenv, load_dotenv
 import numpy as np
+import os
+from dotenv import find_dotenv, load_dotenv
 
-# Herramientas de MLOps (Punto 4)
+# Herramientas de Modelado y MLOps
+import xgboost as xgb
+from sklearn.model_selection import TimeSeriesSplit, GridSearchCV
+from sklearn.metrics import root_mean_squared_error, r2_score, make_scorer,mean_absolute_error
+# Importaciones de MLflow
 import mlflow
-import mlflow.sklearn
+import mlflow.xgboost 
 
-TARGET_COLUMN = 'cnt'
+# --- Configuración de MLflow ---
+TARGET_COLUMN = 'cnt_log'
+MODEL_NAME = "XGBoost_Bike_Sharing_Optimized"
+MLFLOW_EXPERIMENT_NAME = "bike_sharing_time_series"
 
-def evaluate_metrics(y_true: pd.Series, y_pred: np.ndarray) -> dict:
-    """Calcula las métricas de evaluación para el problema de regresión."""
+logger = logging.getLogger(__name__)
+
+
+def evaluate_metrics(y_true: pd.Series, y_pred_log: np.ndarray) -> dict:
+    """
+    Calcula las métricas de evaluación clave (logarítmicas y en escala original).
+    """
     
-    # IMPORTANTE: y_true (target) está en escala logarítmica (log1p).
-    # Para el cálculo de MSE, MAE, R2, necesitamos las predicciones en escala logarítmica
-    # y las etiquetas reales también están en escala logarítmica.
+    # Métrica en escala logarítmica (usada para la optimización)
+    rmse_log = np.sqrt(root_mean_squared_error(y_true, y_pred_log))
+    r2_log = r2_score(y_true, y_pred_log)
+    mae_log = mean_absolute_error(y_true, y_pred_log)
     
-    # Si quieres reportar las métricas en la escala original (renta de bicis real),
-    # deberías aplicar la inversa: np.expm1(y_true) y np.expm1(y_pred).
+    # Deshacer la transformación Logarítmica para métricas originales
+    y_true_original = np.expm1(y_true)
+    y_pred_original = np.expm1(y_pred_log)
     
-    # Mantendremos la evaluación en escala logarítmica para coherencia con el entrenamiento.
-    rmse = np.sqrt(mean_squared_error(y_true, y_pred))
-    mae = mean_absolute_error(y_true, y_pred)
-    r2 = r2_score(y_true, y_pred)
-    
-    # Calculamos también el RMSE en la escala original para tener una métrica interpretable
-    # En MLflow registraremos ambas.
-    rmse_original_scale = np.sqrt(mean_squared_error(np.expm1(y_true), np.expm1(y_pred)))
+    # Asegurar no negativos y calcular RMSE original
+    y_pred_original[y_pred_original < 0] = 0
+    rmse_original = np.sqrt(root_mean_squared_error(y_true_original, y_pred_original))
     
     return {
-        "rmse_log": rmse,
-        "mae_log": mae,
-        "r2_log": r2,
-        "rmse_original": rmse_original_scale # Métrica para interpretación humana
+        "rmse_log": rmse_log,
+        "mae_log": mae_log,
+        "r2_log": r2_log,
+        "rmse_original": rmse_original
     }
-
 
 @click.command()
 @click.argument('input_dir', type=click.Path(exists=True))
-@click.argument('preprocessor_filepath', type=click.Path(exists=True))
 @click.argument('model_filepath', type=click.Path())
-def main(input_dir, preprocessor_filepath, model_filepath):
+def train_and_log_model(input_dir, model_filepath):
     """
-    Entrena el modelo de Machine Learning, encapsulado en un Pipeline,
-    y registra el experimento con MLflow. (Puntos 3 y 4)
+    Carga los sets de Train/Validation, ejecuta el tuning con TimeSeriesSplit, 
+    evalúa el mejor modelo y registra los resultados en MLflow.
     """
-    logger = logging.getLogger(__name__)
     
-    # --- Configuración de MLflow (Punto 4) ---
-    mlflow.set_experiment("Bike Sharing MLOps Regressor")
+    # 1. Cargar Datos (archivos generados por build_features.py)
+    try:
+        input_path = Path(input_dir)
+        X_train = pd.read_csv(input_path / 'X_train.csv')
+        y_train = pd.read_csv(input_path / 'y_train.csv')[TARGET_COLUMN] 
+        X_val = pd.read_csv(input_path / 'X_val.csv')
+        y_val = pd.read_csv(input_path / 'y_val.csv')[TARGET_COLUMN] 
+    except Exception as e:
+        logger.error(f"Error cargando datasets desde {input_dir}: {e}")
+        return
+
+    # 2. Configuración de MLflow: Se establece el experimento.
+    mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
     
     with mlflow.start_run() as run:
+        
         logger.info(f"MLflow Run ID: {run.info.run_id}")
+        logger.info("Iniciando tuning con TimeSeriesSplit...")
         
-        # 1. Cargar datos y preprocesador
-        logger.info("Cargando datos de entrenamiento/prueba y preprocesador.")
-        input_path = Path(input_dir)
-        
-        X_train = pd.read_csv(input_path / 'X_train.csv')
-        y_train = pd.read_csv(input_path / 'y_train.csv')[TARGET_COLUMN]
-        X_test = pd.read_csv(input_path / 'X_test.csv')
-        y_test = pd.read_csv(input_path / 'y_test.csv')[TARGET_COLUMN]
-        
-        preprocessor = joblib.load(preprocessor_filepath)
-
-        # 2. Definición del Modelo y Pipeline (Punto 3)
-        # Random Forest Regressor (Modelo usado en 02_feature_eng.ipynb)
-        
-        # Definición de hiperparámetros (para el registro en MLflow)
-        rf_params = {
-            "n_estimators": 200,         # Un ajuste típico
-            "max_depth": 15,             # Controlar la complejidad
-            "random_state": 42,
-            "min_samples_split": 5       # Ajuste basado en el 02_feature_eng.ipynb
+        # Parámetros para el tuning (Basado en la optimización previa)
+        param_grid = {
+            'n_estimators': [200, 400, 600], 
+            'max_depth': [5, 7],
+            'learning_rate': [0.05, 0.1]
         }
         
-        model = RandomForestRegressor(**rf_params)
+        # Configurar Time Series Cross-Validation
+        tscv = TimeSeriesSplit(n_splits=5) 
         
-        # Creación del Pipeline Final: Preprocesador + Modelo (Punto 3)
-        full_pipeline = Pipeline(steps=[
-            ('preprocessor', preprocessor),
-            ('regressor', model)
-        ])
+        # Usamos RMSE negativo para scoring (se maximiza)
+        rmse_scorer = make_scorer(root_mean_squared_error, greater_is_better=False)
         
-        logger.info("Pipeline creado y listo para entrenamiento.")
-
-        # 3. Entrenamiento del Modelo
-        full_pipeline.fit(X_train, y_train)
-        logger.info("Entrenamiento del modelo completado.")
-
-        # 4. Evaluación y Registro de Experimento (Punto 4)
+        # 3. Ejecutar GridSearchCV
+        xgb_model = xgb.XGBRegressor(random_state=42, n_jobs=-1, eval_metric='rmse')
         
-        # Predicciones
-        predictions = full_pipeline.predict(X_test)
-        
-        # Cálculo de Métricas
-        metrics = evaluate_metrics(y_test, predictions)
-        
-        logger.info(f"Métricas (Log Scale): RMSE={metrics['rmse_log']:.4f}, R2={metrics['r2_log']:.4f}")
-        logger.info(f"Métrica en escala original: RMSE={metrics['rmse_original']:.2f}")
-
-        # Registro en MLflow
-        mlflow.log_params(rf_params) # Hiperparámetros
-        mlflow.log_metrics(metrics)  # Métricas
-        
-        # Etiquetar el tipo de modelo
-        mlflow.set_tag("model_type", "RandomForest")
-        
-        # Registrar el Pipeline COMPLETO (Punto 4: Gestión de Modelos)
-        # Esto incluye el preprocesador ajustado y el modelo entrenado.
-        mlflow.sklearn.log_model(
-            sk_model=full_pipeline,
-            artifact_path="bike_sharing_model",
-            registered_model_name="BikeSharingRandomForest" # Registrar en Model Registry
+        grid_search = GridSearchCV(
+            estimator=xgb_model, 
+            param_grid=param_grid, 
+            scoring=rmse_scorer, 
+            cv=tscv, 
+            verbose=1, 
+            n_jobs=-1
         )
         
-        logger.info(f"Experimento y modelo registrados en MLflow. Model Name: BikeSharingRandomForest")
-
-        # 5. Guardar el modelo localmente (Artefacto para el entregable)
+        grid_search.fit(X_train, y_train)
+        
+        # 4. Evaluación y Métricas
+        best_xgb = grid_search.best_estimator_
+        y_pred_log = best_xgb.predict(X_val)
+        
+        metrics = evaluate_metrics(y_val, y_pred_log)
+        
+        # 5. Registro en MLflow
+        
+        # Registrar Hiperparámetros
+        mlflow.log_params(grid_search.best_params_)
+        
+        # Registrar Métricas Finales
+        for key, value in metrics.items():
+             mlflow.log_metric(key, value)
+        
+        # Registrar el modelo final (artefacto)
+        mlflow.xgboost.log_model(
+            xgb_model=best_xgb, 
+            name="model", 
+            registered_model_name=MODEL_NAME
+        )
+        
+        # Guardar el modelo localmente (Artefacto para el entregable)
         Path(model_filepath).parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump(full_pipeline, model_filepath)
-        logger.info(f"Pipeline completo guardado localmente en: {model_filepath}")
+        joblib.dump(best_xgb, model_filepath)
+        
+        # Salida final
+        logger.info("\n" + "="*50)
+        logger.info(f"ENTRENAMIENTO FINALIZADO Y REGISTRADO EN MLFLOW")
+        logger.info(f"-> RMSE Original: {metrics['rmse_original']:.2f} bicicletas")
+        logger.info(f"-> R2 Log: {metrics['r2_log']:.4f}")
+        logger.info(f"Mejores Parámetros: {grid_search.best_params_}")
+        logger.info(f"Modelo registrado en MLflow como: {MODEL_NAME}")
 
 
 if __name__ == '__main__':
@@ -134,16 +143,9 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format=log_fmt)
     load_dotenv(find_dotenv())
     
-    # Rutas de ejemplo para la ejecución
+    # Lógica de ejecución de prueba
     project_dir = Path(__file__).resolve().parents[2]
-    input_dir = project_dir / 'data' / 'interim' # X_train, y_train, etc.
-    preprocessor_file = project_dir / 'models' / 'preprocessor.pkl'
-    model_file = project_dir / 'models' / 'final_pipeline.pkl'
+    input_directory = project_dir / 'data' / 'interim' 
+    model_file = project_dir / 'models' / 'final_xgb_model.pkl'
     
-    # Argumentos que pasarías al script en la terminal:
-    # python src/models/train_model.py data/interim models/preprocessor.pkl models/final_pipeline.pkl
-    
-    try:
-        main([str(input_dir), str(preprocessor_file), str(model_file)])
-    except Exception as e:
-        logging.getLogger(__name__).error(f"Fallo al ejecutar train_model.py: {e}")
+    train_and_log_model.callback(str(input_directory), str(model_file))
