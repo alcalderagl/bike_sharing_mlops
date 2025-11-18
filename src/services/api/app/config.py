@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    MODEL_PATH: str = "models/final_xgb_model.pkl" 
+    MODEL_PATH: str = "models/final_pipeline.pkl"
     MODEL_VERSION: str = "1.0.0" # Versión final del modelo
     PORT: int = 8000 
 
