@@ -18,3 +18,12 @@ app = FastAPI(
 
 app.include_router(health.router, prefix="/health", tags=["health"])
 app.include_router(predict.router, prefix="/v1", tags=["predict"])
+
+@app.on_event("startup")
+def load_model_on_startup():
+    try:
+        load_model()
+        print("Modelo cargado correctamente en startup.")
+    except FileNotFoundError as e:
+        print(f"Error cargando modelo en startup: {e}")
+        raise
