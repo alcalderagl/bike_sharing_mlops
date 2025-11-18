@@ -225,3 +225,6 @@ service_account.json
 !data/**/*.dvc
 !data/**/.gitignore
 !data/**/.gitkeep
+
+# .save from Docker
+*.save
