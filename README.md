@@ -186,3 +186,55 @@ Para validar el seguimiento de experimentos y gestionar el modelo registrado (Pu
 mlflow ui
 ```
 Abre el navegador en la dirección indicada para ver las métricas (ej. RMSE) y los parámetros del experimento.
+
+### 5. Validación de Reproducibilidad entre Entornos
+
+El proyecto incluye un script de validación de reproducibilidad (`tools/run_repro_two_envs.py`) que permite verificar que el pipeline produce resultados idénticos en diferentes entornos virtuales. Este script es especialmente útil para garantizar la reproducibilidad del proyecto en diferentes máquinas o configuraciones.
+
+#### ¿Qué hace el script?
+
+El script realiza las siguientes acciones:
+
+1. **Crea dos entornos virtuales independientes** (`env_a` y `env_b`) en la carpeta `repro/`
+2. **Instala las dependencias** desde `requirements-repro.txt` en cada entorno
+3. **Ejecuta el pipeline completo** (`dvc repro`) en cada entorno de forma aislada
+4. **Compara los artefactos generados** entre ambos entornos:
+   - Modelos entrenados (`final_xgb_model.pkl`)
+   - Predicciones (`predictions_final.csv`)
+   - Datos procesados (`bike_sharing_processed.csv`)
+5. **Calcula métricas de comparación**:
+   - RMSE, MAE y R² para cada entorno
+   - Prueba estadística de Kolmogorov-Smirnov (KS test) entre las predicciones
+6. **Genera visualizaciones comparativas**:
+   - Gráfico de diferencia absoluta entre predicciones
+   - Scatter plot comparando predicciones de ambos entornos
+
+#### Cómo ejecutarlo
+
+Desde el directorio raíz del proyecto:
+
+```
+python tools/run_repro_two_envs.py
+```
+
+#### Salidas del script
+
+El script genera los siguientes resultados:
+
+- **Comparación binaria**: Verifica si los archivos son idénticos byte a byte
+- **Hashes MD5**: Muestra los hashes MD5 de los modelos y predicciones para verificación rápida
+- **Métricas de rendimiento**: Compara RMSE, MAE y R² entre ambos entornos
+- **Prueba estadística**: Realiza un test KS para verificar si las distribuciones de predicciones son estadísticamente equivalentes
+- **Visualizaciones**: Guarda gráficos en `repro/`:
+  - `diff_absolute.png`: Muestra la diferencia absoluta entre predicciones
+  - `scatter_a_vs_b.png`: Comparación visual de predicciones de ambos entornos
+
+#### Interpretación de resultados
+
+- **Archivos idénticos**: Si los modelos y predicciones son idénticos entre entornos, el pipeline es completamente reproducible
+- **Métricas similares**: Si las métricas (RMSE, MAE, R²) son muy similares pero los archivos no son idénticos, puede indicar diferencias menores en la precisión numérica
+- **Test KS**: Un p-value alto (> 0.05) sugiere que las distribuciones de predicciones son estadísticamente equivalentes
+
+Este script es una herramienta valiosa para validar que el pipeline mantiene la reproducibilidad incluso cuando se ejecuta en entornos completamente aislados, lo cual es fundamental para proyectos de MLOps en producción.
+
+

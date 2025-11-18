@@ -1,7 +1,8 @@
-# dvc.yaml CORREGIDO
+# dvc.yaml
 
 stages:
   # 1. Limpieza, Winsorización y Transformación del Target (make_dataset.py)
+  # Salida: Dataset limpio y listo para FE, incluyendo la columna 'cnt' limpia para Lags.
   process_data:
     cmd: python src/data/make_dataset.py data/raw/bike_sharing_modified.csv data/processed/bike_sharing_processed.csv
     deps:
@@ -10,43 +11,69 @@ stages:
     outs:
       - data/processed/bike_sharing_processed.csv
 
-  # 2. División de Datos por Tiempo, Ingeniería de Features y Guardado del Preprocesador (build_features.py)
-  # NOTA: Esta etapa sigue rastreando el directorio intermedio.
-  split_and_preprocess:
-    cmd: python src/features/build_features.py data/processed/bike_sharing_processed.csv data/interim models/preprocessor.pkl
+  # 2. Ingeniería de Features y Split Temporal (build_features.py)
+  # Salida: Los 4 sets de datos separados por tiempo (Train/Validation).
+  feature_engineering:
+    # Comando: script_path input_file output_dir
+    cmd: python src/features/build_features.py data/processed/bike_sharing_processed.csv data/interim
     deps:
       - src/features/build_features.py
       - data/processed/bike_sharing_processed.csv
+    # Los 4 archivos CSV son las salidas
     outs:
-      - data/interim/  # Directorio que contiene X_train.csv, y_train.csv, X_test.csv, y_test.csv
-      - models/preprocessor.pkl
+      - data/interim/X_train.csv
+      - data/interim/X_val.csv
+      - data/interim/y_train.csv
+      - data/interim/y_val.csv
 
-  # 3. Entrenamiento del Pipeline, Evaluación y Registro en MLflow (train_model.py)
+  # 3. Entrenamiento, Tuning (TSCV) y Registro en MLflow (train_model.py)
   train_model:
-    cmd: python src/models/train_model.py data/interim models/preprocessor.pkl models/final_pipeline.pkl
+    # Comando: script_path input_dir model_filepath
+    cmd: python src/models/train_model.py data/interim models/final_xgb_model.pkl
     deps:
       - src/models/train_model.py
-      - data/interim/
-      - models/preprocessor.pkl
+      - data/interim/X_train.csv
+      - data/interim/X_val.csv
+      - data/interim/y_train.csv
+      - data/interim/y_val.csv
+    # Salida: Solo el modelo XGBoost serializado (NO un pipeline con preprocesador)
     outs:
-      - models/final_pipeline.pkl
+      - models/final_xgb_model.pkl
 
-  # 4. Generación de Predicciones con el Pipeline Final (predict_model.py)
+  # 4. Generación de Predicciones con Lags (predict_model.py)
   predict:
-    cmd: python src/models/predict_model.py models/final_pipeline.pkl data/interim/X_test.csv data/results/predictions_final.csv
+    cmd: python src/models/predict_model.py models/final_xgb_model.pkl data/interim/X_val.csv data/interim/Index_val.csv data/results/predictions_final.csv
     deps:
       - src/models/predict_model.py
-      - models/final_pipeline.pkl
-      - data/interim/X_test.csv
+      - models/final_xgb_model.pkl
+      - data/interim/X_val.csv        
+      - data/interim/Index_val.csv
     outs:
       - data/results/predictions_final.csv
-
   # 5. Visualización de Resultados (visualize.py)
   visualize:
-    cmd: python src/visualization/visualize.py data/results/predictions_final.csv data/interim/y_test.csv reports/figures/predictions_vs_real.png
+    # Compara la predicción con el valor real del conjunto de validación (`y_val.csv`).
+    cmd: python src/visualization/visualize.py data/results/predictions_final.csv data/interim/y_val.csv reports/figures/predictions_vs_real.png
     deps:
       - src/visualization/visualize.py
       - data/results/predictions_final.csv
-      - data/interim/y_test.csv
+      - data/interim/y_val.csv
     outs:
       - reports/figures/predictions_vs_real.png
+  # 6. Pruebas unitarias (tests/)
+  test:
+    cmd: pytest -q tests/
+    deps:
+      - src/data/make_dataset.py
+      - src/features/build_features.py
+      - src/models/train_model.py
+      - src/models/predict_model.py
+      # Archivos de pruebas y fixtures
+      - tests/conftest.py
+      - tests/test_unit_data.py
+      #- tests/test_integration.py
+      # Datos de prueba que necesita el test de integración
+      - data/interim/X_train.csv
+      - data/interim/y_train.csv
+      # El modelo (si el test de integración lo requiere, lo necesita como dependencia)
+      - models/final_xgb_model.pkl

@@ -1,0 +1,13 @@
+numpy
+pandas
+scikit-learn
+xgboost
+
+mlflow
+dvc[s3]
+
+matplotlib
+seaborn
+click
+joblib
+feature-engine
