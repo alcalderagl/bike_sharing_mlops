@@ -40,46 +40,46 @@ stages:
     deps:
     - path: data/interim/X_train.csv
       hash: md5
-      md5: a1ec1b1faa5125c45e4283daeadf12e5
-      size: 3735169
+      md5: e50c54d28435ff9b710ccddc913dca21
+      size: 3722857
     - path: data/interim/X_val.csv
       hash: md5
-      md5: a47808c1e0e7af08330e683d1bbc62c6
-      size: 929122
+      md5: e5b751f14db69ff89cfe6ae2fa1cd49c
+      size: 925585
     - path: data/interim/y_train.csv
       hash: md5
-      md5: 298402fce0aee20db4c354a6e2b571d7
-      size: 268585
+      md5: 25082f39df272c3d4067cf550c0b39d3
+      size: 254579
     - path: data/interim/y_val.csv
       hash: md5
-      md5: 2d26a4f8caeaa25df71da4850e954eb8
-      size: 66988
+      md5: b13371385049a1348b71d406bbba2e8d
+      size: 63485
     - path: src/models/train_model.py
       hash: md5
-      md5: ffa5618e8d39ff411dd638985722f212
-      size: 5494
+      md5: dc181df7bb6bb55b364626a7bd6e8f06
+      size: 5343
     outs:
     - path: models/final_xgb_model.pkl
       hash: md5
-      md5: 2f2e339c10484fac8883c0aa088ceaee
-      size: 1405906
+      md5: 24989d3f23a7213da29f84463107eeb4
+      size: 520653
   process_data:
     cmd: python src/data/make_dataset.py data/raw/bike_sharing_modified.csv 
       data/processed/bike_sharing_processed.csv
     deps:
     - path: data/raw/bike_sharing_modified.csv
       hash: md5
-      md5: 1484028223d304a18ddd9ce33a1af441
-      size: 1686247
+      md5: 251597478570574f956478158e2c03e0
+      size: 1613070
     - path: src/data/make_dataset.py
       hash: md5
-      md5: a7a921e4610b30187c9ef35e4ca326b6
-      size: 15739
+      md5: 179093d4b1092ec22e5e67b393613b04
+      size: 15338
     outs:
     - path: data/processed/bike_sharing_processed.csv
       hash: md5
-      md5: e196c4673f77ab43935580c3c44b983c
-      size: 1015273
+      md5: 55c95d28465c60bb9b46f03a7cbfd310
+      size: 997532
   split_and_preprocess:
     cmd: python src/features/build_features.py 
       data/processed/bike_sharing_processed.csv data/interim 
@@ -110,25 +110,25 @@ stages:
     deps:
     - path: data/interim/Index_val.csv
       hash: md5
-      md5: 057ac3190cc3a64436c570b3f10b6caf
-      size: 51092
+      md5: 345cbb491b8669489fcd391ee82371c6
+      size: 47589
     - path: data/interim/X_val.csv
       hash: md5
-      md5: a47808c1e0e7af08330e683d1bbc62c6
-      size: 929122
+      md5: e5b751f14db69ff89cfe6ae2fa1cd49c
+      size: 925585
     - path: models/final_xgb_model.pkl
       hash: md5
-      md5: 2f2e339c10484fac8883c0aa088ceaee
-      size: 1405906
+      md5: 24989d3f23a7213da29f84463107eeb4
+      size: 520653
     - path: src/models/predict_model.py
       hash: md5
-      md5: 787a81b288d593809fe271a73b4e0252
-      size: 7104
+      md5: 57504ba9f452c137f96981c96d440af9
+      size: 6943
     outs:
     - path: data/results/predictions_final.csv
       hash: md5
-      md5: fabe60956ee1402a1fc5825c2b0b0852
-      size: 70708
+      md5: dacc41b37d455d59aeb30ab2135287a9
+      size: 67253
   visualize:
     cmd: python src/visualization/visualize.py 
       data/results/predictions_final.csv data/interim/y_val.csv 
@@ -136,21 +136,21 @@ stages:
     deps:
     - path: data/interim/y_val.csv
       hash: md5
-      md5: 2d26a4f8caeaa25df71da4850e954eb8
-      size: 66988
+      md5: b13371385049a1348b71d406bbba2e8d
+      size: 63485
     - path: data/results/predictions_final.csv
       hash: md5
-      md5: fabe60956ee1402a1fc5825c2b0b0852
-      size: 70708
+      md5: dacc41b37d455d59aeb30ab2135287a9
+      size: 67253
     - path: src/visualization/visualize.py
       hash: md5
-      md5: 85f6197de0705df327d1efd984c688a9
-      size: 4128
+      md5: af4e20028240862ad0d70494a77d077b
+      size: 4035
     outs:
     - path: reports/figures/predictions_vs_real.png
       hash: md5
-      md5: be7d9f846b356fe49e05bb028b7a04b5
-      size: 262348
+      md5: 7461e96d2de61c2d4bb9c961f15c059a
+      size: 226171
   predict_rf:
     cmd: python src/models/predict_model.py models rf data/interim/X_test.csv 
       data/results/predictions_rf.csv
@@ -199,65 +199,65 @@ stages:
     deps:
     - path: data/processed/bike_sharing_processed.csv
       hash: md5
-      md5: e196c4673f77ab43935580c3c44b983c
-      size: 1015273
+      md5: 55c95d28465c60bb9b46f03a7cbfd310
+      size: 997532
     - path: src/features/build_features.py
       hash: md5
-      md5: 97d0fc33a2f335bd64cfe18b8819717a
-      size: 7058
+      md5: 609ed0c7caa7356c7dfca73865f20edc
+      size: 6887
     outs:
     - path: data/interim/X_train.csv
       hash: md5
-      md5: a1ec1b1faa5125c45e4283daeadf12e5
-      size: 3735169
+      md5: e50c54d28435ff9b710ccddc913dca21
+      size: 3722857
     - path: data/interim/X_val.csv
       hash: md5
-      md5: a47808c1e0e7af08330e683d1bbc62c6
-      size: 929122
+      md5: e5b751f14db69ff89cfe6ae2fa1cd49c
+      size: 925585
     - path: data/interim/y_train.csv
       hash: md5
-      md5: 298402fce0aee20db4c354a6e2b571d7
-      size: 268585
+      md5: 25082f39df272c3d4067cf550c0b39d3
+      size: 254579
     - path: data/interim/y_val.csv
       hash: md5
-      md5: 2d26a4f8caeaa25df71da4850e954eb8
-      size: 66988
+      md5: b13371385049a1348b71d406bbba2e8d
+      size: 63485
   test:
     cmd: pytest -q tests/
     deps:
     - path: data/interim/X_train.csv
       hash: md5
-      md5: a1ec1b1faa5125c45e4283daeadf12e5
-      size: 3735169
+      md5: e50c54d28435ff9b710ccddc913dca21
+      size: 3722857
     - path: data/interim/y_train.csv
       hash: md5
-      md5: 298402fce0aee20db4c354a6e2b571d7
-      size: 268585
+      md5: 25082f39df272c3d4067cf550c0b39d3
+      size: 254579
     - path: models/final_xgb_model.pkl
       hash: md5
-      md5: 2f2e339c10484fac8883c0aa088ceaee
-      size: 1405906
+      md5: 24989d3f23a7213da29f84463107eeb4
+      size: 520653
     - path: src/data/make_dataset.py
       hash: md5
-      md5: a7a921e4610b30187c9ef35e4ca326b6
-      size: 15739
+      md5: 179093d4b1092ec22e5e67b393613b04
+      size: 15338
     - path: src/features/build_features.py
       hash: md5
-      md5: 97d0fc33a2f335bd64cfe18b8819717a
-      size: 7058
+      md5: 609ed0c7caa7356c7dfca73865f20edc
+      size: 6887
     - path: src/models/predict_model.py
       hash: md5
-      md5: 787a81b288d593809fe271a73b4e0252
-      size: 7104
+      md5: 57504ba9f452c137f96981c96d440af9
+      size: 6943
     - path: src/models/train_model.py
       hash: md5
-      md5: ffa5618e8d39ff411dd638985722f212
-      size: 5494
+      md5: dc181df7bb6bb55b364626a7bd6e8f06
+      size: 5343
     - path: tests/conftest.py
       hash: md5
-      md5: 507f912f895fa61419870d46b22397de
-      size: 3507
+      md5: 56a39629e393ba505bddee97b0ec67d3
+      size: 3429
     - path: tests/test_unit_data.py
       hash: md5
-      md5: 3ef7bbbf7a32de44746449e90caa4c0f
-      size: 6253
+      md5: c7477da91da2f41016c75aabd4fff8fb
+      size: 6119

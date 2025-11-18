@@ -227,8 +227,8 @@ python-json-logger==2.0.7
 python-slugify==8.0.4
 python-socketio==5.11.2
 pytz==2024.1
-pywin32==306
-pywinpty==2.0.13
+#pywin32==306 # Windows only
+#pywinpty==2.0.13 # Windows only
 PyYAML==6.0.2
 pyzmq==26.0.3
 referencing==0.35.1
@@ -271,7 +271,7 @@ tabulate==0.9.0
 tensorboard==2.16.2
 tensorboard-data-server==0.7.2
 tensorflow==2.16.1
-tensorflow-intel==2.16.1
+#tensorflow-intel==2.16.1
 termcolor==2.4.0
 terminado==0.18.1
 text-unidecode==1.3
