@@ -49,5 +49,5 @@ def predict(payload: PredictionRequest, _=Depends(load_model)):
     
     return {
         "predictions": [float(pred) for pred in preds],
-        "rows": len(preds)
+        "model_version": get_version()
     }

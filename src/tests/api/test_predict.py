@@ -21,21 +21,18 @@ def test_predict_ok(monkeypatch):
     payload = {
         "instances": [
             {
-                "season": 1,
-                "yr": 1,
-                "mnth": 1,
-                "hr": 14,
-                "holiday": 0,
-                "weekday": 3,
-                "workingday": 1,
-                "weathersit": 2,
-                "temp": 0.32,
-                "atemp": 0.30,
-                "hum": 0.58,
+                "dteday": "2012-11-20",
+                "hr": 8,
+                "temp": 0.45,
+                "hum": 0.6,
                 "windspeed": 0.15,
-                "year": 2024,
-                "month": 10,
-                "dayofweek": 1
+                "weathersit": 2,
+                "cnt_lag_1": 100.0,
+                "cnt_lag_24": 250.0,
+                "season": 3,
+                "yr": 1,
+                "mnth": 11,
+                "weekday": 2
             }
         ],
         "inverse_transform": True
@@ -46,5 +43,5 @@ def test_predict_ok(monkeypatch):
     assert response.status_code == 200
     data = response.json()
 
-    assert data["predictions"] == [195.15814508877813]
+    assert data["predictions"] == [152]
 
