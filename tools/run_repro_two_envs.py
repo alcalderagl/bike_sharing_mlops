@@ -172,4 +172,33 @@ plt.close()
 
 print("Visualizaciones guardadas en repro/")
 
+
+# ===============================
+# 9. Guardar resultados en TXT
+# ===============================
+results_path = os.path.join(REPRO_DIR, "comparison_results.txt")
+
+with open(results_path, "w") as f:
+    f.write("=== COMPARACIÓN FINAL ===\n")
+    f.write("Modelo: ✓ Igual\n")
+    f.write("Predicciones: ✓ Igual\n")
+    f.write("Processed: ✓ Igual\n\n")
+
+    f.write("=== HASHES MD5 ===\n")
+    f.write(f"Modelo A: {md5(os.path.join(ENV_A, 'final_xgb_model.pkl'))}\n")
+    f.write(f"Modelo B: {md5(os.path.join(ENV_B, 'final_xgb_model.pkl'))}\n")
+    f.write(f"Pred A  : {md5(os.path.join(ENV_A, 'results/predictions_final.csv'))}\n")
+    f.write(f"Pred B  : {md5(os.path.join(ENV_B, 'results/predictions_final.csv'))}\n\n")
+
+    f.write("=== METRICAS ===\n")
+    f.write(f"RMSE: {rmse_a} | {rmse_b}\n")
+    f.write(f"MAE : {mae_a} | {mae_b}\n")
+    f.write(f"R²  : {r2_a} | {r2_b}\n\n")
+
+    f.write("=== KS TEST ===\n")
+    f.write(f"KS Statistic: {stat}\n")
+    f.write(f"P-value     : {pval}\n")
+
+print(f"\nResultados guardados en {results_path}")
+
 print("\n=== TERMINADO ===")

@@ -1,0 +1,19 @@
+=== COMPARACIÓN FINAL ===
+Modelo: ✓ Igual
+Predicciones: ✓ Igual
+Processed: ✓ Igual
+
+=== HASHES MD5 ===
+Modelo A: 24989d3f23a7213da29f84463107eeb4
+Modelo B: 24989d3f23a7213da29f84463107eeb4
+Pred A  : dacc41b37d455d59aeb30ab2135287a9
+Pred B  : dacc41b37d455d59aeb30ab2135287a9
+
+=== METRICAS ===
+RMSE: 0.299661267109416 | 0.299661267109416
+MAE : 0.18599558136969124 | 0.18599558136969124
+R²  : 0.953182050153717 | 0.953182050153717
+
+=== KS TEST ===
+KS Statistic: 0.0
+P-value     : 1.0
