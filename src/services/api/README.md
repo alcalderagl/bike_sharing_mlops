@@ -107,3 +107,51 @@ El payload de la petición POST /v1/predict debe seguir el esquema PredictionReq
   "inverse_transform": true
 }
 ```
+
+---
+
+## 🐳 Docker Image & Versioning
+
+Repositorio en Docker Hub:  
+**`isaiambrocio/bike-ml-service`**
+
+### 🔖 Tags disponibles
+
+| Tag | Estado | Descripción |
+|------|----------|-------------|
+| **`0.1.0`** | ✅ Estable | Primera versión productiva del servicio FastAPI usando `final_xgb_model.pkl`. |
+| **`latest`** | 🟡 Alias | Actualmente apunta a `0.1.0`. Puede cambiar en nuevas versiones. |
+
+> El versionado sigue el estándar **SemVer**: `MAJOR.MINOR.PATCH`
+
+---
+
+### 🚀 Cómo ejecutar el contenedor
+
+```bash
+docker pull isaiambrocio/bike-ml-service:0.1.0
+
+docker run -d \
+  --name bike-ml-api \
+  -p 8000:8000 \
+  isaiambrocio/bike-ml-service:0.1.0
+| URL                                  | Función         |
+| ------------------------------------ | --------------- |
+| `http://localhost:8000/docs`         | Swagger UI      |
+| `http://localhost:8000/health/live`  | Liveness probe  |
+| `http://localhost:8000/health/ready` | Readiness probe |
+
+# Construir imagen con nuevo tag
+docker build -t isaiambrocio/bike-ml-service:<NEW_VERSION> .
+
+# (Opcional) actualizar el tag latest
+docker tag isaiambrocio/bike-ml-service:<NEW_VERSION> isaiambrocio/bike-ml-service:latest
+
+# Subir al registry
+docker push isaiambrocio/bike-ml-service:<NEW_VERSION>
+docker push isaiambrocio/bike-ml-service:latest
+
+docker build -t isaiambrocio/bike-ml-service:0.2.0 .
+docker tag isaiambrocio/bike-ml-service:0.2.0 isaiambrocio/bike-ml-service:latest
+docker push isaiambrocio/bike-ml-service:0.2.0
+docker push isaiambrocio/bike-ml-service:latest
