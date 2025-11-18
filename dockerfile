@@ -31,7 +31,7 @@ COPY src/ ${APP_HOME}/src/
 # Copiar el modelo entrenado y los datos históricos (CRÍTICO)
 # Asume que estos archivos están en la raíz del proyecto.
 COPY models/final_xgb_model.pkl ${APP_HOME}/${MODEL_FILE}
-COPY data/interim/historical_for_prediction.csv ${APP_HOME}/${HISTORICAL_FILE}
+#COPY data/interim/historical_for_prediction.csv ${APP_HOME}/${HISTORICAL_FILE}
 
 # Exponer el puerto
 EXPOSE ${PORT}
@@ -39,3 +39,6 @@ EXPOSE ${PORT}
 # Comando de inicio
 
 CMD ["uvicorn", "src.services.api.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# NOTA: Asegúrate de que config.py tiene MODEL_PATH="models/model.pkl" 
+# (o el nombre que uses) y PORT=8000 (o el que uses aquí).
